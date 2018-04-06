@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bricks</title>
+</head>
+<body>
+	<canvas id="gameCanvas" width="800" height="600">
+		<h1 id="gameEnd">You Lost!</h1>
+	</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('gameCanvas');
+		var ctx = canvas.getContext('2d');	
+		var paddleHeight = 10;
+		var paddleWidth = 150;
+		var ballX = canvas.width/2;
+		var ballY = canvas.height-10;
+		var ballXSpeed = 4;
+		var ballYSpeed = -10;
+		var ballRadius = 10;
+		var SPF = 30;
+		var paddleX = 255;
+
+		var bricksCols = 7;
+		var bricksRows = 5;
+		var bricksWidth = 100;
+		var bricksHeight = 20;
+		var bricksOffsetTop = 50;
+		var bricksOffsetLeft = 50;
+		var bricksPadding = 1;
+		var bricksX;
+		var bricksY; 
+		var distance;
+		var score = 0;
+
+		
+		var gameEnd = document.getElementById('gameEnd');
+
+
+
+		var bricks = [];
+		for (var c = 0; c < bricksCols; c++){
+			bricks[c] = [];
+			for (var r = 0; r < bricksRows; r++){
+				bricks[c][r] = {x: 0, y: 0, status: 1};
+			}
+		}
+
+		function collision(){
+				for (var c = 0; c < bricksCols; c++){
+					for (var r = 0; r < bricksRows; r++){
+						var b = bricks[c][r];
+						if(b.status == 1){
+						if (ballX >= b.x && ballX <= b.x + bricksWidth && ballY >= b.y && ballY <= b.y + bricksHeight) {
+							ballYSpeed = -ballYSpeed;
+							b.status = 0;
+							score ++;
+							if(score == bricksCols*bricksRows){
+								alert('You Win! Press OK to Play Again');
+								document.location.reload();
+
+								
+							}
+							
+						}
+					}
+
+				}
+			}
+		}
+
+
+		
+
+		function displayScore(){
+			ctx.font = 'Arial';
+			ctx.fillStyle = 'white';
+			ctx.fillText('Score: ' + score, 50, 30);
+
+		}
+
+		function gameOver(){
+			if (ballY > canvas.height) {
+				bricksCols = 0;
+				bricksRows = 0;
+
+				ctx.font = '30px Arial';
+				ctx.fillStyle = 'white';
+				ctx.fillText('You Lost! Press Refresh to Play Again', 150, canvas.height/2);
+				
+				
+			}
+		}
+
+
+		function drawingBricks(){
+			for ( var c = 0; c < bricksCols; c++){
+				for (var r = 0; r < bricksRows; r++){
+					if(bricks[c][r].status == 1){
+					bricksX = (c*(bricksWidth+bricksPadding))+bricksOffsetLeft;
+					bricksY = (r*(bricksHeight+bricksPadding))+bricksOffsetTop;
+					bricks[c][r].x = bricksX;
+					bricks[c][r].y = bricksY;
+					ctx.beginPath();
+					ctx.rect(bricksX, bricksY, bricksWidth, bricksHeight);
+					ctx.fillStyle = 'red';
+					ctx.fill();
+ 					}
+				}
+			}
+		}
+		
+
+		canvas.addEventListener('mousemove', function(event){
+				var mousePosition = getMousePosition(event);
+				paddleX = mousePosition.x - paddleWidth/2;
+			});
+
+		window.onload = function(){
+
+			
+			setInterval(function(){
+				draw();
+				movement();
+			}, 1000/SPF)
+
+			
+		
+
+		}
+
+
+		function draw(){
+			////////////////// drawing the canvas //////////////////
+			ctx.fillStyle = 'black';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+			////////////////// drawing paddle //////////////////
+			ctx.fillStyle = 'white';
+			ctx.fillRect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+
+			drawingBricks();
+
+			////////////////// drawing ball //////////////////
+			
+			drawingBall();
+    		displayScore();
+		}
+
+
+		function drawingBall(){
+			ctx.fillStyle = 'lime';
+			ctx.beginPath();
+			ctx.arc(ballX,ballY,ballRadius,0,Math.PI*2,true);
+    		ctx.fill();
+		}
+
+		function movement(){
+			collision();
+			ballY = ballY + ballYSpeed;
+			ballX = ballX + ballXSpeed;
+			if (ballY == 0) {
+				ballYSpeed = -ballYSpeed;
+			}
+			if (ballY == canvas.height){
+				if (ballX > paddleX && ballX < paddleX + paddleWidth) {
+				ballYSpeed = -ballYSpeed;
+				}
+			}
+
+			if (ballX <= 0) {
+				ballXSpeed = -ballXSpeed;
+			}
+			if (ballX >= canvas.width) {
+				ballXSpeed = -ballXSpeed;
+			}
+
+			gameOver();
+		}
+
+
+		function getMousePosition(event){
+			var rect = canvas.getBoundingClientRect();
+			var root = document.documentElement;
+			var mouseX = event.clientX - rect.left - root.scrollLeft;
+			var mouseY = event.clientY - rect.top - root.scrollTop;
+			return {
+				x:mouseX,
+				y:mouseY
+			};
+		}
+
+		
+	</script>
+</body>
+</html>
